@@ -1,10 +1,12 @@
 package ru.skypro.ListsAndSets.sevices.impl;
 
 import jakarta.annotation.PostConstruct;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import ru.skypro.ListsAndSets.exception.EmployeeAlreadyAddedException;
 import ru.skypro.ListsAndSets.exception.EmployeeNotFoundException;
 import ru.skypro.ListsAndSets.exception.EmployeeStorageIsFullException;
+import ru.skypro.ListsAndSets.exception.InvalidNameException;
 import ru.skypro.ListsAndSets.model.Employee;
 import ru.skypro.ListsAndSets.sevices.EmployeeService;
 
@@ -34,7 +36,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (employees.containsKey(getKey(firstName, lastName))) {
             throw new EmployeeAlreadyAddedException("Сотрудник" + firstName + " " + lastName + " уже работает в компании");
         }
-        Employee employee = new Employee(firstName, lastName, salary, department);
+        validateNames(firstName, lastName);
+        Employee employee = new Employee(StringUtils.capitalize(firstName), StringUtils.capitalize(lastName), salary, department);
         employees.put(getKey(employee), employee);
         return employee;
     }
@@ -65,5 +68,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
     private static String getKey(Employee employee) {
         return employee.getFirstName() + employee.getLastName();
+    }
+
+    private void validateNames(String... names) {
+        for (String name: names) {
+            if (!StringUtils.isAlpha(name)) {
+                throw new InvalidNameException(name + " is invalid");
+            }
+        }
     }
 }
